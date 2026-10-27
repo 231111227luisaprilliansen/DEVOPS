@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kanban Board</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Halaman login / registrasi -->
+<section id="auth" hidden>
+  <form class="auth-card" id="authForm" autocomplete="on">
+    <h1>Kanban Board</h1>
+    <p id="authSub">Masuk untuk mengelola project Anda.</p>
+    <div id="nameWrap" hidden><label for="aName">Nama</label><input id="aName" autocomplete="name" maxlength="100"></div>
+    <label for="aEmail">Email</label><input id="aEmail" type="email" required autocomplete="email">
+    <label for="aPass">Password</label><input id="aPass" type="password" required minlength="6" autocomplete="current-password">
+    <div class="error" id="authErr"></div>
+    <button class="btn" id="authBtn" type="submit">Masuk</button>
+    <div class="switch"><span id="switchTxt">Belum punya akun?</span> <a id="switchLink">Daftar</a></div>
+  </form>
+</section>
+
+<!-- Aplikasi (hanya tampil setelah login) -->
+<div id="app" hidden>
+  <header>
+    <span class="logo" id="logo">&#9638; Kanban Board</span>
+    <span class="spacer"></span>
+    <span class="who" id="who"></span>
+    <button class="btn ghost sm" id="logout">Keluar</button>
+  </header>
+  <main>
+    <!-- Daftar project -->
+    <section id="vProjects">
+      <div class="bar"><h2>Project Saya</h2><button class="btn" id="newProject">+ Project Baru</button></div>
+      <div class="grid" id="projectGrid"></div>
+    </section>
+
+    <!-- Papan -->
+    <section id="vBoard" hidden>
+      <div class="bar">
+        <button class="btn ghost sm" id="bBack">&larr; Project</button>
+        <h2 id="bTitle"></h2>
+        <button class="btn ghost sm" id="bHistory">Riwayat</button>
+        <button class="btn ghost sm" id="bEdit">Ubah</button>
+        <button class="btn danger sm" id="bDelete">Hapus</button>
+        <p class="desc" id="bDesc"></p>
+      </div>
+      <div class="board" id="board"></div>
+    </section>
+
+    <!-- Riwayat -->
+    <section id="vHistory" hidden>
+      <div class="bar"><button class="btn ghost sm" id="hBack">&larr; Kembali ke papan</button><h2 id="hTitle"></h2></div>
+      <div class="history"><ul id="hList"></ul></div>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

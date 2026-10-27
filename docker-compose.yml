@@ -1,0 +1,44 @@
+# 3 container: frontend (nginx) -> backend (Express) -> database (MySQL)
+services:
+  database:
+    image: mysql:8.0
+    container_name: kanban-database
+    environment:
+      MYSQL_ROOT_PASSWORD: kanban123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -uroot -pkanban123 -h127.0.0.1 -e 'USE kanban_board; SELECT 1' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  backend:
+    build: .
+    container_name: kanban-backend
+    environment:
+      PORT: 3000
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: kanban123
+      DB_NAME: kanban_board
+      JWT_SECRET: ${JWT_SECRET:-ganti-rahasia-ini-dengan-teks-acak-panjang}
+    depends_on:
+      database:
+        condition: service_healthy
+
+  frontend:
+    image: nginx:alpine
+    container_name: kanban-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

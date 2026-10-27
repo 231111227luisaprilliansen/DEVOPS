@@ -1,0 +1,87 @@
+/* ===== Variabel & dasar ===== */
+:root {
+  --bg: #f1f3f9; --surface: #fff; --text: #1e2235; --muted: #6b7190; --line: #e2e5f0;
+  --primary: #4f46e5; --primary-d: #4338ca; --danger: #dc2626; --col: #e8ebf5;
+  --radius: 12px; --shadow: 0 1px 3px rgba(30,34,53,.08), 0 4px 14px rgba(30,34,53,.05);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+[hidden] { display: none !important; }
+button, input, textarea { font: inherit; }
+input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); }
+input:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 4px; }
+.error { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 8px; }
+.empty { text-align: center; color: var(--muted); padding: 50px 10px; }
+
+/* ===== Tombol ===== */
+.btn { border: 0; border-radius: 8px; padding: 9px 16px; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; }
+.btn:hover { background: var(--primary-d); }
+.btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.btn.ghost:hover { background: var(--col); }
+.btn.danger { background: var(--danger); }
+.btn.sm { padding: 5px 10px; font-size: 13px; }
+
+/* ===== Login / registrasi ===== */
+#auth { min-height: 100vh; display: grid; place-items: center; padding: 16px; background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+.auth-card { background: var(--surface); width: 100%; max-width: 400px; padding: 32px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+.auth-card h1 { margin: 0 0 4px; font-size: 24px; }
+.auth-card p { margin: 0 0 8px; color: var(--muted); }
+.auth-card .btn { width: 100%; margin-top: 16px; padding: 11px; }
+.switch { text-align: center; margin-top: 16px; font-size: 14px; color: var(--muted); }
+.switch a { color: var(--primary); cursor: pointer; font-weight: 600; }
+
+/* ===== Layout aplikasi ===== */
+header { background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 5; }
+header .logo { font-weight: 800; font-size: 18px; color: var(--primary); cursor: pointer; }
+header .spacer { flex: 1; }
+header .who { font-size: 14px; color: var(--muted); }
+main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 18px; }
+.bar h2 { margin: 0; flex: 1; min-width: 160px; }
+.bar .desc { width: 100%; color: var(--muted); margin: -6px 0 0; }
+
+/* ===== Daftar project ===== */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.pcard { background: var(--surface); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); cursor: pointer; border: 1px solid transparent; transition: .15s; }
+.pcard:hover { border-color: var(--primary); transform: translateY(-2px); }
+.pcard h3 { margin: 0 0 6px; word-break: break-word; }
+.pcard p { margin: 0 0 10px; color: var(--muted); font-size: 14px; word-break: break-word; }
+.pcard small { color: var(--muted); }
+
+/* ===== Papan kanban ===== */
+.board { display: grid; grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 16px; align-items: start; overflow-x: auto; padding-bottom: 12px; }
+.column { background: var(--col); border-radius: var(--radius); padding: 12px; min-height: 140px; }
+.column.over { outline: 2px dashed var(--primary); background: #dfe3f7; }
+.column h3 { margin: 2px 4px 12px; font-size: 15px; display: flex; justify-content: space-between; }
+.column h3 span { background: #fff; border-radius: 99px; padding: 0 9px; font-size: 13px; color: var(--muted); }
+.card { background: var(--surface); border-radius: 10px; padding: 12px; margin-bottom: 10px; box-shadow: var(--shadow); cursor: grab; }
+.card.dragging { opacity: .4; }
+.card h4 { margin: 0; font-size: 15px; word-break: break-word; }
+.card p { margin: 6px 0 0; color: var(--muted); font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.card .acts { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.add-card { width: 100%; background: transparent; border: 1px dashed #aab; color: var(--muted); border-radius: 8px; padding: 8px; cursor: pointer; }
+.add-card:hover { background: #fff; color: var(--primary); }
+.moveSel { font-size: 12px; padding: 4px; width: auto; }
+
+/* ===== Riwayat ===== */
+.history { background: var(--surface); border-radius: var(--radius); padding: 8px 20px; box-shadow: var(--shadow); }
+.history ul { margin: 0; padding: 0; }
+.history li { padding: 10px 0; border-bottom: 1px solid var(--line); list-style: none; display: flex; gap: 10px; flex-wrap: wrap; }
+.history li:last-child { border: 0; }
+.history .t { color: var(--muted); font-size: 13px; min-width: 150px; }
+.history .u { font-weight: 600; }
+.tag { font-size: 11px; background: #eef; color: var(--primary); border-radius: 99px; padding: 2px 8px; align-self: center; }
+
+/* ===== Modal & toast ===== */
+.overlay { position: fixed; inset: 0; background: rgba(20,22,40,.5); display: grid; place-items: center; padding: 16px; z-index: 20; }
+.modal { background: #fff; border-radius: 14px; padding: 24px; width: 100%; max-width: 440px; max-height: 90vh; overflow: auto; }
+.modal h3 { margin: 0 0 4px; }
+.modal .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+#toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2235; color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 30; }
+
+/* ===== Responsif ===== */
+@media (max-width: 800px) {
+  .board { grid-template-columns: 1fr; }
+  main { padding: 14px; }
+}
