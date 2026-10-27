@@ -39,10 +39,12 @@ CREATE TABLE IF NOT EXISTS cards (
   project_id  INT UNSIGNED NOT NULL,
   title       VARCHAR(150) NOT NULL,
   description TEXT NULL,
+  priority    ENUM('rendah','sedang','tinggi') NOT NULL DEFAULT 'sedang',
+  due_date    DATE NULL,
   position    INT NOT NULL DEFAULT 0,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_cards_column  FOREIGN KEY (column_id)  REFERENCES columns_board(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cards_column FOREIGN KEY (column_id)  REFERENCES columns_board(id) ON DELETE CASCADE,
   CONSTRAINT fk_cards_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
   INDEX idx_cards_column (column_id, position)
 ) ENGINE=InnoDB;

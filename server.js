@@ -33,6 +33,22 @@ const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 const clean = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
 
+const PRIORITIES = ['rendah', 'sedang', 'tinggi'];
+// Baca prioritas & tenggat dari body; kembalikan { error } jika tidak valid
+function cardExtras(body) {
+  const priority = body.priority === undefined || body.priority === '' ? 'sedang' : body.priority;
+  if (!PRIORITIES.includes(priority)) return { error: 'Prioritas harus rendah, sedang, atau tinggi' };
+  const raw = body.due_date;
+  let due = null;
+  if (raw) {
+    if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw) || Number.isNaN(Date.parse(raw))) {
+      return { error: 'Tenggat harus berformat YYYY-MM-DD' };
+    }
+    due = raw;
+  }
+  return { priority, due };
+}
+
 // ---------- Otentikasi ----------
 function auth(req, res, next) {
   const h = req.headers.authorization || '';
@@ -149,7 +165,9 @@ app.get('/api/projects/:id/board', auth, wrap(async (req, res) => {
   const p = await ownProject(req, res, req.params.id); if (!p) return;
   const [cols] = await pool.query('SELECT id, title, position FROM columns_board WHERE project_id = ? ORDER BY position, id', [p.id]);
   const [cards] = await pool.query(
-    'SELECT id, column_id, title, description, position, created_at, updated_at FROM cards WHERE project_id = ? ORDER BY position, id', [p.id]);
+    `SELECT id, column_id, title, description, priority, DATE_FORMAT(due_date, '%Y-%m-%d') AS due_date,
+            position, created_at, updated_at
+       FROM cards WHERE project_id = ? ORDER BY position, id`, [p.id]);
   res.json({
     project: { id: p.id, name: p.name, description: p.description },
     columns: cols.map((c) => ({ ...c, cards: cards.filter((k) => k.column_id === c.id) })),
@@ -171,12 +189,14 @@ app.post('/api/projects/:id/cards', auth, wrap(async (req, res) => {
   const title = clean(req.body.title, 150);
   const description = clean(req.body.description, 5000) || null;
   if (!title) return bad(res, 'Judul kartu wajib diisi');
+  const ex = cardExtras(req.body);
+  if (ex.error) return bad(res, ex.error);
   const [cols] = await pool.query('SELECT id, title FROM columns_board WHERE id = ? AND project_id = ?', [req.body.column_id, p.id]);
   if (!cols.length) return bad(res, 'Kolom tidak valid');
   const [[{ pos }]] = await pool.query('SELECT COALESCE(MAX(position) + 1, 0) AS pos FROM cards WHERE column_id = ?', [cols[0].id]);
   const [r] = await pool.query(
-    'INSERT INTO cards (column_id, project_id, title, description, position) VALUES (?, ?, ?, ?, ?)',
-    [cols[0].id, p.id, title, description, pos]);
+    'INSERT INTO cards (column_id, project_id, title, description, priority, due_date, position) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [cols[0].id, p.id, title, description, ex.priority, ex.due, pos]);
   await log(pool, p.id, req.user.id, 'card_created', `Kartu "${title}" dibuat di kolom ${cols[0].title}`);
   res.status(201).json({ id: r.insertId });
 }));
@@ -186,9 +206,17 @@ app.put('/api/cards/:id', auth, wrap(async (req, res) => {
   const title = clean(req.body.title, 150);
   const description = clean(req.body.description, 5000) || null;
   if (!title) return bad(res, 'Judul kartu wajib diisi');
-  await pool.query('UPDATE cards SET title = ?, description = ? WHERE id = ?', [title, description, c.id]);
+  const ex = cardExtras(req.body);
+  if (ex.error) return bad(res, ex.error);
+  await pool.query('UPDATE cards SET title = ?, description = ?, priority = ?, due_date = ? WHERE id = ?',
+    [title, description, ex.priority, ex.due, c.id]);
+  const notes = [];
+  if (title !== c.title) notes.push(`judul menjadi "${title}"`);
+  if (ex.priority !== c.priority) notes.push(`prioritas ${c.priority} menjadi ${ex.priority}`);
+  const oldDue = c.due_date ? new Date(c.due_date).toLocaleDateString('sv-SE') : null;
+  if (ex.due !== oldDue) notes.push(ex.due ? `tenggat ${ex.due}` : 'tenggat dihapus');
   await log(pool, c.project_id, req.user.id, 'card_updated',
-    title === c.title ? `Kartu "${title}" diubah` : `Kartu "${c.title}" diubah menjadi "${title}"`);
+    `Kartu "${c.title}" diubah` + (notes.length ? ': ' + notes.join(', ') : ''));
   res.json({ ok: true });
 }));
 

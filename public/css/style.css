@@ -60,6 +60,13 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .card h4 { margin: 0; font-size: 15px; word-break: break-word; }
 .card p { margin: 6px 0 0; color: var(--muted); font-size: 13px; white-space: pre-wrap; word-break: break-word; }
 .card .acts { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.card .meta { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; }
+.card .meta span { border-radius: 99px; padding: 2px 9px; background: var(--col); color: var(--muted); }
+.card .meta .prio.rendah { background: #dcfce7; color: #166534; }
+.card .meta .prio.sedang { background: #fef3c7; color: #92400e; }
+.card .meta .prio.tinggi { background: #fee2e2; color: #991b1b; }
+.card .meta .due.late { background: var(--danger); color: #fff; }
+select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); }
 .add-card { width: 100%; background: transparent; border: 1px dashed #aab; color: var(--muted); border-radius: 8px; padding: 8px; cursor: pointer; }
 .add-card:hover { background: #fff; color: var(--primary); }
 .moveSel { font-size: 12px; padding: 4px; width: auto; }

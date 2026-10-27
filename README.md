@@ -32,6 +32,9 @@ Password di-hash (bcrypt), JWT 7 hari (disimpan di localStorage), query MySQL be
 ## API ringkas
 `POST /api/register`, `POST /api/login`, `GET /api/me`, `GET/POST /api/projects`, `PUT/DELETE /api/projects/:id`, `GET /api/projects/:id/board`, `GET /api/projects/:id/history`, `POST /api/projects/:id/cards`, `PUT/DELETE /api/cards/:id`, `PATCH /api/cards/:id/move`.
 
+## Migrasi database
+Database yang sudah ada perlu menjalankan file di `migrations/` (mis. `001_prioritas_tenggat.sql`); database baru cukup `database.sql`.
+
 ## CI/CD (GitHub Actions)
 `.github/workflows/ci-cd.yml`:
 - **CI** (setiap push dan pull request): `npm ci`, cek syntax, jalankan MySQL + server, lalu `npm test` (uji API end-to-end).

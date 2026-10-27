@@ -47,6 +47,21 @@ test('alur lengkap: register, login, project, kartu, riwayat, kepemilikan', asyn
   const actions = (await call('GET', `/api/projects/${pid}/history`, null, token)).data.map((h) => h.action);
   for (const a of ['project_created', 'card_created', 'card_moved', 'card_updated', 'card_deleted']) assert.ok(actions.includes(a), a);
 
+  // prioritas & tenggat
+  const hi = await call('POST', `/api/projects/${pid}/cards`, { title: 'Urgent', column_id: c1, priority: 'tinggi', due_date: '2030-01-15' }, token);
+  assert.equal(hi.status, 201);
+  assert.equal((await call('POST', `/api/projects/${pid}/cards`, { title: 'X', column_id: c1, priority: 'darurat' }, token)).status, 400);
+  assert.equal((await call('POST', `/api/projects/${pid}/cards`, { title: 'X', column_id: c1, due_date: '15-01-2030' }, token)).status, 400);
+  assert.equal((await call('PUT', `/api/cards/${hi.data.id}`, { title: 'Urgent', priority: 'rendah', due_date: '' }, token)).status, 200);
+  board = (await call('GET', `/api/projects/${pid}/board`, null, token)).data;
+  const urgent = board.columns[0].cards.find((c) => c.title === 'Urgent');
+  assert.equal(urgent.priority, 'rendah');
+  assert.equal(urgent.due_date, null);
+  assert.equal(board.columns[0].cards.find((c) => c.title === 'B2').priority, 'sedang');
+  const detail = (await call('GET', `/api/projects/${pid}/history`, null, token)).data[0].detail;
+  assert.match(detail, /prioritas tinggi menjadi rendah/);
+  assert.match(detail, /tenggat dihapus/);
+
   // user lain tidak boleh mengakses
   assert.equal((await call('GET', `/api/projects/${pid}/board`, null, other)).status, 404);
   assert.equal((await call('PUT', `/api/cards/${ids[0]}`, { title: 'x' }, other)).status, 404);

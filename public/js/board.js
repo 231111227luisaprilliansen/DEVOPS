@@ -52,8 +52,14 @@ function cardEl(c, col) {
     el('option', { value: '' }, 'Pindah ke…'));
   for (const o of state.columns) if (o.id !== col.id) sel.append(el('option', { value: o.id }, o.title));
 
+  const today = new Date().toLocaleDateString('sv-SE');
+  const overdue = c.due_date && c.due_date < today && col.title !== 'Done';
+  const meta = el('div', { class: 'meta' },
+    el('span', { class: 'prio ' + c.priority }, PRIORITY_LABEL[c.priority] || c.priority),
+    c.due_date ? el('span', { class: 'due' + (overdue ? ' late' : '') }, 'Tenggat ' + fmtDate(c.due_date)) : null);
+
   const card = el('div', { class: 'card', draggable: 'true' },
-    el('h4', {}, c.title), c.description ? el('p', {}, c.description) : null,
+    el('h4', {}, c.title), c.description ? el('p', {}, c.description) : null, meta,
     el('div', { class: 'acts' },
       el('button', { class: 'btn ghost sm', onclick: () => editCard(c) }, 'Ubah'),
       el('button', { class: 'btn ghost sm', onclick: () => delCard(c) }, 'Hapus'), sel));
@@ -66,9 +72,15 @@ function cardEl(c, col) {
   return card;
 }
 
+const PRIORITY_LABEL = { rendah: 'Rendah', sedang: 'Sedang', tinggi: 'Tinggi' };
+const fmtDate = (s) => new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { dateStyle: 'medium' });
+
 const cardFields = (c = {}) => [
   { name: 'title', label: 'Judul', required: true, value: c.title },
   { name: 'description', label: 'Deskripsi', long: true, max: 5000, value: c.description },
+  { name: 'priority', label: 'Prioritas', value: c.priority || 'sedang',
+    options: Object.entries(PRIORITY_LABEL).map(([value, label]) => ({ value, label })) },
+  { name: 'due_date', label: 'Tenggat (opsional)', type: 'date', value: c.due_date },
 ];
 
 const addCard = (col) => modal(`Kartu baru di ${col.title}`, cardFields(), 'Tambah', async (v) => {
