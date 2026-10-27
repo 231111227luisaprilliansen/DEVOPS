@@ -7,7 +7,14 @@ export function modal(title, fields, submitText, onSubmit) {
   const form = el('form', { class: 'modal' }, el('h3', {}, title));
   const inputs = {};
   for (const f of fields) {
-    const input = f.long ? el('textarea', { rows: 4, maxlength: f.max || 500 }) : el('input', { maxlength: f.max || 150 });
+    let input;
+    if (f.options) {
+      input = el('select', {}, ...f.options.map((o) => el('option', { value: o.value }, o.label)));
+    } else if (f.long) {
+      input = el('textarea', { rows: 4, maxlength: f.max || 500 });
+    } else {
+      input = el('input', f.type === 'date' ? { type: 'date' } : { maxlength: f.max || 150 });
+    }
     input.value = f.value || '';
     if (f.required) input.required = true;
     inputs[f.name] = input;
