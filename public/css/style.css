@@ -50,7 +50,12 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .pcard small { color: var(--muted); }
 
 /* ===== Papan kanban ===== */
-.board { display: grid; grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 16px; align-items: start; overflow-x: auto; padding-bottom: 12px; }
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 1fr); gap: 16px; align-items: start; overflow-x: auto; padding-bottom: 12px; }
+.col-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 12px; }
+.col-head h3 { margin: 2px 4px; flex: 1; min-width: 0; word-break: break-word; }
+.col-acts { display: flex; gap: 2px; }
+.col-acts .icon { border: 0; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
+.col-acts .icon:hover { background: #fff; color: var(--primary); }
 .column { background: var(--col); border-radius: var(--radius); padding: 12px; min-height: 140px; }
 .column.over { outline: 2px dashed var(--primary); background: #dfe3f7; }
 .column h3 { margin: 2px 4px 12px; font-size: 15px; display: flex; justify-content: space-between; }
@@ -89,6 +94,6 @@ select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-
 
 /* ===== Responsif ===== */
 @media (max-width: 800px) {
-  .board { grid-template-columns: 1fr; }
+  .board { grid-auto-flow: row; grid-auto-columns: 1fr; }
   main { padding: 14px; }
 }
