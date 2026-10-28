@@ -5,7 +5,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
-
+const cors = require('cors');
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET || JWT_SECRET.length < 16) {
@@ -13,6 +13,10 @@ if (!JWT_SECRET || JWT_SECRET.length < 16) {
   process.exit(1);
 }
 
+app.use(cors({
+  origin: ['https://panglimatempur.netlify.app', 'http://localhost:5173'], // Ganti dengan URL Netlify kamu
+  credentials: true
+}));
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: Number(process.env.DB_PORT || 3306),
@@ -311,3 +315,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => console.log(`Kanban Board berjalan di http://localhost:${PORT}`));
+
+module.exports = app;
