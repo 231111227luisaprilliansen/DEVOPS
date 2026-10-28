@@ -27,8 +27,12 @@ function renderBoard() {
 function columnEl(col) {
   const body = el('div', { class: 'cards' });
   for (const c of col.cards) body.append(cardEl(c, col));
-  const colEl = el('div', { class: 'column', 'data-col': col.id },
-    el('h3', {}, col.title, el('span', {}, String(col.cards.length))), body,
+  const head = el('div', { class: 'col-head' },
+    el('h3', {}, col.title, el('span', {}, String(col.cards.length))),
+    el('div', { class: 'col-acts' },
+      el('button', { class: 'icon', title: 'Ganti nama kolom', onclick: () => renameColumn(col) }, 'Ubah'),
+      el('button', { class: 'icon', title: 'Hapus kolom', onclick: () => delColumn(col) }, 'Hapus')));
+  const colEl = el('div', { class: 'column', 'data-col': col.id }, head, body,
     el('button', { class: 'add-card', onclick: () => addCard(col) }, '+ Tambah kartu'));
 
   colEl.addEventListener('dragover', (e) => { e.preventDefault(); colEl.classList.add('over'); });
@@ -98,6 +102,24 @@ const delCard = (c) => confirmBox(`Hapus kartu "${c.title}"?`, async () => {
   await reload();
 });
 
+const addColumn = () => modal('Kolom baru', [
+  { name: 'title', label: 'Nama kolom', required: true, max: 80 },
+], 'Tambah', async (v) => {
+  await api('POST', `/api/projects/${state.project.id}/columns`, v);
+  await reload();
+});
+
+const renameColumn = (col) => modal('Ganti nama kolom', [
+  { name: 'title', label: 'Nama kolom', required: true, max: 80, value: col.title },
+], 'Simpan', async (v) => {
+  await api('PUT', '/api/columns/' + col.id, v);
+  await reload();
+});
+
+const delColumn = (col) => confirmBox(
+  col.cards.length ? `Hapus kolom "${col.title}" beserta ${col.cards.length} kartu di dalamnya?` : `Hapus kolom "${col.title}"?`,
+  async () => { await api('DELETE', '/api/columns/' + col.id); await reload(); });
+
 async function moveCard(id, columnId, position) {
   try { await api('PATCH', `/api/cards/${id}/move`, { column_id: columnId, position }); }
   catch (x) { toast(x.message); }
@@ -106,6 +128,7 @@ async function moveCard(id, columnId, position) {
 
 export function setupBoard() {
   $('#bBack').onclick = () => { location.hash = ''; };
+  $('#bAddCol').onclick = addColumn;
   $('#bHistory').onclick = () => { location.hash = `#/project/${state.project.id}/history`; };
   $('#bEdit').onclick = () => modal('Ubah project', [
     { name: 'name', label: 'Nama project', required: true, max: 120, value: state.project.name },

@@ -183,6 +183,49 @@ app.get('/api/projects/:id/history', auth, wrap(async (req, res) => {
   res.json(rows);
 }));
 
+// ---------- Kolom ----------
+// Ambil kolom milik user (lewat project-nya)
+async function ownColumn(req, res, id) {
+  const [rows] = await pool.query(
+    `SELECT col.* FROM columns_board col JOIN projects p ON p.id = col.project_id
+      WHERE col.id = ? AND p.user_id = ?`, [id, req.user.id]);
+  if (!rows.length) { bad(res, 'Kolom tidak ditemukan', 404); return null; }
+  return rows[0];
+}
+
+app.post('/api/projects/:id/columns', auth, wrap(async (req, res) => {
+  const p = await ownProject(req, res, req.params.id); if (!p) return;
+  const title = clean(req.body.title, 80);
+  if (!title) return bad(res, 'Nama kolom wajib diisi');
+  const [[{ n, pos }]] = await pool.query(
+    'SELECT COUNT(*) AS n, COALESCE(MAX(position) + 1, 0) AS pos FROM columns_board WHERE project_id = ?', [p.id]);
+  if (n >= 10) return bad(res, 'Maksimal 10 kolom per project');
+  const [r] = await pool.query('INSERT INTO columns_board (project_id, title, position) VALUES (?, ?, ?)', [p.id, title, pos]);
+  await log(pool, p.id, req.user.id, 'column_created', `Kolom "${title}" dibuat`);
+  res.status(201).json({ id: r.insertId });
+}));
+
+app.put('/api/columns/:id', auth, wrap(async (req, res) => {
+  const col = await ownColumn(req, res, req.params.id); if (!col) return;
+  const title = clean(req.body.title, 80);
+  if (!title) return bad(res, 'Nama kolom wajib diisi');
+  await pool.query('UPDATE columns_board SET title = ? WHERE id = ?', [title, col.id]);
+  await log(pool, col.project_id, req.user.id, 'column_updated', `Kolom "${col.title}" diubah menjadi "${title}"`);
+  res.json({ ok: true });
+}));
+
+// Menghapus kolom ikut menghapus kartu di dalamnya; kolom terakhir tidak boleh dihapus
+app.delete('/api/columns/:id', auth, wrap(async (req, res) => {
+  const col = await ownColumn(req, res, req.params.id); if (!col) return;
+  const [[{ n }]] = await pool.query('SELECT COUNT(*) AS n FROM columns_board WHERE project_id = ?', [col.project_id]);
+  if (n <= 1) return bad(res, 'Project harus punya minimal satu kolom');
+  const [[{ cards }]] = await pool.query('SELECT COUNT(*) AS cards FROM cards WHERE column_id = ?', [col.id]);
+  await pool.query('DELETE FROM columns_board WHERE id = ?', [col.id]);
+  await log(pool, col.project_id, req.user.id, 'column_deleted',
+    `Kolom "${col.title}" dihapus` + (cards ? ` beserta ${cards} kartu` : ''));
+  res.json({ ok: true });
+}));
+
 // ---------- Kartu ----------
 app.post('/api/projects/:id/cards', auth, wrap(async (req, res) => {
   const p = await ownProject(req, res, req.params.id); if (!p) return;

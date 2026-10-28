@@ -62,6 +62,28 @@ test('alur lengkap: register, login, project, kartu, riwayat, kepemilikan', asyn
   assert.match(detail, /prioritas tinggi menjadi rendah/);
   assert.match(detail, /tenggat dihapus/);
 
+  // kelola kolom
+  const nc = await call('POST', `/api/projects/${pid}/columns`, { title: 'Review' }, token);
+  assert.equal(nc.status, 201);
+  assert.equal((await call('POST', `/api/projects/${pid}/columns`, { title: '  ' }, token)).status, 400);
+  assert.equal((await call('PUT', `/api/columns/${nc.data.id}`, { title: 'QA' }, token)).status, 200);
+  board = (await call('GET', `/api/projects/${pid}/board`, null, token)).data;
+  assert.deepEqual(board.columns.map((c) => c.title), ['To Do', 'In Progress', 'Done', 'QA']);
+  assert.equal((await call('PUT', `/api/columns/${nc.data.id}`, { title: 'x' }, other)).status, 404);
+  assert.equal((await call('DELETE', `/api/columns/${nc.data.id}`, null, other)).status, 404);
+  assert.equal((await call('DELETE', `/api/columns/${nc.data.id}`, null, token)).status, 200);
+  board = (await call('GET', `/api/projects/${pid}/board`, null, token)).data;
+  assert.equal(board.columns.length, 3);
+  const colActions = (await call('GET', `/api/projects/${pid}/history`, null, token)).data.map((h) => h.action);
+  for (const a of ['column_created', 'column_updated', 'column_deleted']) assert.ok(colActions.includes(a), a);
+
+  // project dengan satu kolom tidak boleh kehilangan kolom terakhir
+  const solo = (await call('POST', '/api/projects', { name: 'Solo' }, token)).data.id;
+  const soloCols = (await call('GET', `/api/projects/${solo}/board`, null, token)).data.columns;
+  assert.equal((await call('DELETE', `/api/columns/${soloCols[0].id}`, null, token)).status, 200);
+  assert.equal((await call('DELETE', `/api/columns/${soloCols[1].id}`, null, token)).status, 200);
+  assert.equal((await call('DELETE', `/api/columns/${soloCols[2].id}`, null, token)).status, 400);
+
   // user lain tidak boleh mengakses
   assert.equal((await call('GET', `/api/projects/${pid}/board`, null, other)).status, 404);
   assert.equal((await call('PUT', `/api/cards/${ids[0]}`, { title: 'x' }, other)).status, 404);

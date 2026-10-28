@@ -5,7 +5,7 @@ import { api } from './api.js';
 
 const ACTION = {
   project_created: 'Project', project_updated: 'Project', card_created: 'Dibuat',
-  card_updated: 'Diubah', card_deleted: 'Dihapus', card_moved: 'Dipindah', card_reordered: 'Urutan',
+  column_created: 'Kolom', column_updated: 'Kolom', column_deleted: 'Kolom', card_updated: 'Diubah', card_deleted: 'Dihapus', card_moved: 'Dipindah', card_reordered: 'Urutan',
 };
 
 export async function loadHistory(id) {
