@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, fitur-tambahan]
   pull_request:
 
 jobs:
@@ -54,7 +54,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        include:
+        include :
           - name: backend
             file: Dockerfile
           - name: frontend
