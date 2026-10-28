@@ -5,6 +5,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
+const cors = require('cors');
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -25,6 +26,11 @@ const pool = mysql.createPool({
 
 const app = express();
 app.use(express.json({ limit: '100kb' }));
+
+app.use(cors({
+  origin: ['https://panglimatempur.netlify.app', 'http://localhost:5173'], // Ganti dengan URL Netlify kamu
+  credentials: true
+}));
 
 // Frontend (folder public). Saat dijalankan lewat Docker, frontend disajikan nginx.
 app.use(express.static(path.join(__dirname, 'public')));
@@ -310,4 +316,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Terjadi kesalahan pada server' });
 });
 
-app.listen(PORT, () => console.log(`Kanban Board berjalan di http://localhost:${PORT}`));
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Kanban Board berjalan di http://localhost:${PORT}`));
+}
+
+module.exports = app;

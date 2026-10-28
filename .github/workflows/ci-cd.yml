@@ -14,6 +14,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: kanban_board
         ports: ["3306:3306"]
         options: >-
           --health-cmd="mysqladmin ping -h127.0.0.1 -uroot -proot"
@@ -27,7 +28,7 @@ jobs:
       - run: npm ci
       - run: node --check server.js
       - name: Impor skema database
-        run: mysql -h127.0.0.1 -uroot -proot < database.sql
+        run: mysql -h127.0.0.1 -uroot -proot kanban_board < database.sql
       - name: Jalankan server
         run: |
           node server.js > server.log 2>&1 &
