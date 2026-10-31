@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { $, el, toast, show } from './utils.js';
 import { api } from './api.js';
 import { modal, confirmBox } from './modal.js';
+import { renderStats, setupStats } from './stats.js';
 
 export async function loadBoard(id) {
   const d = await api('GET', `/api/projects/${id}/board`);
@@ -10,6 +11,7 @@ export async function loadBoard(id) {
   state.columns = d.columns;
   show('vBoard');
   renderBoard();
+  renderStats().catch(() => {});
 }
 
 const reload = () => loadBoard(state.project.id);
@@ -129,6 +131,7 @@ async function moveCard(id, columnId, position) {
 export function setupBoard() {
   $('#bBack').onclick = () => { location.hash = ''; };
   $('#bAddCol').onclick = addColumn;
+  setupStats();
   $('#bHistory').onclick = () => { location.hash = `#/project/${state.project.id}/history`; };
   $('#bEdit').onclick = () => modal('Ubah project', [
     { name: 'name', label: 'Nama project', required: true, max: 120, value: state.project.name },
