@@ -189,6 +189,33 @@ app.get('/api/projects/:id/history', auth, wrap(async (req, res) => {
   res.json(rows);
 }));
 
+// Ringkasan project. Kolom paling kanan dianggap "selesai".
+app.get('/api/projects/:id/stats', auth, wrap(async (req, res) => {
+  const p = await ownProject(req, res, req.params.id); if (!p) return;
+  const [cols] = await pool.query(
+    `SELECT col.id, col.title, COUNT(c.id) AS count
+       FROM columns_board col LEFT JOIN cards c ON c.column_id = col.id
+      WHERE col.project_id = ? GROUP BY col.id ORDER BY col.position, col.id`, [p.id]);
+  const [prio] = await pool.query('SELECT priority, COUNT(*) AS n FROM cards WHERE project_id = ? GROUP BY priority', [p.id]);
+  const lastId = cols.length ? cols[cols.length - 1].id : null;
+  const [[late]] = await pool.query(
+    'SELECT COUNT(*) AS n FROM cards WHERE project_id = ? AND due_date < CURDATE() AND column_id <> ?', [p.id, lastId || 0]);
+  const [[soon]] = await pool.query(
+    `SELECT COUNT(*) AS n FROM cards WHERE project_id = ? AND column_id <> ?
+        AND due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)`, [p.id, lastId || 0]);
+  const total = cols.reduce((s, c) => s + Number(c.count), 0);
+  const done = cols.length ? Number(cols[cols.length - 1].count) : 0;
+  res.json({
+    total,
+    done,
+    progress: total ? Math.round((done / total) * 100) : 0,
+    by_column: cols.map((c) => ({ id: c.id, title: c.title, count: Number(c.count) })),
+    by_priority: Object.fromEntries(PRIORITIES.map((k) => [k, Number((prio.find((r) => r.priority === k) || {}).n || 0)])),
+    overdue: Number(late.n),
+    due_soon: Number(soon.n),
+  });
+}));
+
 // ---------- Kolom ----------
 // Ambil kolom milik user (lewat project-nya)
 async function ownColumn(req, res, id) {

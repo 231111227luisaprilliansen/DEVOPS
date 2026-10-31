@@ -84,6 +84,19 @@ test('alur lengkap: register, login, project, kartu, riwayat, kepemilikan', asyn
   assert.equal((await call('DELETE', `/api/columns/${soloCols[1].id}`, null, token)).status, 200);
   assert.equal((await call('DELETE', `/api/columns/${soloCols[2].id}`, null, token)).status, 400);
 
+  // statistik project
+  await call('POST', `/api/projects/${pid}/cards`, { title: 'Telat', column_id: c1, priority: 'tinggi', due_date: '2020-01-01' }, token);
+  const st = (await call('GET', `/api/projects/${pid}/stats`, null, token)).data;
+  board = (await call('GET', `/api/projects/${pid}/board`, null, token)).data;
+  const cardTotal = board.columns.reduce((n, c) => n + c.cards.length, 0);
+  assert.equal(st.total, cardTotal);
+  assert.equal(st.by_column.length, board.columns.length);
+  assert.equal(st.by_priority.tinggi, 1);
+  assert.equal(st.overdue, 1);
+  assert.ok(st.progress >= 0 && st.progress <= 100);
+  assert.equal((await call('GET', `/api/projects/${pid}/stats`, null, other)).status, 404);
+  assert.equal((await call('GET', `/api/projects/${pid}/stats`)).status, 401);
+
   // user lain tidak boleh mengakses
   assert.equal((await call('GET', `/api/projects/${pid}/board`, null, other)).status, 404);
   assert.equal((await call('PUT', `/api/cards/${ids[0]}`, { title: 'x' }, other)).status, 404);
